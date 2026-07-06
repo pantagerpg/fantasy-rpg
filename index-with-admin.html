@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronicles of Aethoria - 판타지 텍스트 RPG</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #0f3460;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(15, 52, 96, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0f3460;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #00d4ff;
+            text-shadow: 0 0 10px #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background: #ff6b00;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            background: #0f3460;
+            color: #00d4ff;
+            border: 2px solid #00d4ff;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #00d4ff;
+            color: #0f3460;
+            box-shadow: 0 0 10px #00d4ff;
+        }
+
+        .btn.admin {
+            background: #ff6b00;
+            border-color: #ff6b00;
+            color: white;
+        }
+
+        .btn.admin:hover {
+            background: #ff8c00;
+            box-shadow: 0 0 10px #ff8c00;
+        }
+
+        .btn.danger {
+            background: #ff0000;
+            border-color: #ff0000;
+            color: white;
+        }
+
+        .btn.danger:hover {
+            background: #cc0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00d4ff;
+            font-weight: bold;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a2e;
+            color: #eee;
+            border: 1px solid #0f3460;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #00d4ff;
+            box-shadow: 0 0 5px #00d4ff;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .message.success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+
+        .message.error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+
+        .message.info {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+        }
+
+        .admin-panel {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 5px;
+            border: 2px solid #ff6b00;
+        }
+
+        .admin-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ff6b00;
+        }
+
+        .admin-section:last-child {
+            border-bottom: none;
+        }
+
+        .admin-section h3 {
+            color: #ff6b00;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ff6b00;
+            text-align: center;
+        }
+
+        .stat-card h4 {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            color: #ff6b00;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: #16213e;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .user-table th {
+            background: #0f3460;
+            color: #ff6b00;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #ff6b00;
+        }
+
+        .user-table td {
+            padding: 12px;
+            border-bottom: 1px solid #0f3460;
+            color: #aaa;
+        }
+
+        .user-table tr:hover {
+            background: #0f3460;
+        }
+
+        .user-table .action-btn {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0f3460;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #00d4ff;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            color: #00d4ff;
+            margin-bottom: 20px;
+        }
+
+        .modal-content .close-btn {
+            float: right;
+            cursor: pointer;
+            color: #888;
+            font-size: 1.5em;
+        }
+
+        .modal-content .close-btn:hover {
+            color: #00d4ff;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .user-table {
+                font-size: 0.9em;
+            }
+
+            .user-table th,
+            .user-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ Chronicles of Aethoria</h1>
+            <p>판타지 텍스트 RPG - 관리자 기능 포함</p>
+        </div>
+
+        <!-- 메인 메뉴 -->
+        <div id="mainMenu" class="screen active">
+            <div class="menu">
+                <button class="btn" onclick="showScreen('loginScreen')">플레이어 로그인</button>
+                <button class="btn admin" onclick="showScreen('adminLoginScreen')">🔐 관리자 로그인</button>
+                <button class="btn" onclick="showScreen('registerScreen')">회원가입</button>
+            </div>
+        </div>
+
+        <!-- 관리자 로그인 -->
+        <div id="adminLoginScreen" class="screen">
+            <h2 style="color: #ff6b00; margin-bottom: 20px;">🔐 관리자 로그인</h2>
+            <div class="input-group">
+                <label>관리자 아이디</label>
+                <input type="text" id="adminUsername" placeholder="관리자 아이디">
+            </div>
+            <div class="input-group">
+                <label>관리자 비밀번호</label>
+                <input type="password" id="adminPassword" placeholder="관리자 비밀번호">
+            </div>
+            <div class="menu">
+                <button class="btn admin" onclick="adminLogin()">관리자 로그인</button>
+                <button class="btn" onclick="showScreen('mainMenu')">돌아가기</button>
+            </div>
+        </div>
+
+        <!-- 관리자 패널 -->
+        <div id="adminPanel" class="screen">
+            <div class="admin-panel">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #ff6b00;">🔐 관리자 패널</h2>
+                    <button class="btn" onclick="adminLogout()">로그아웃</button>
+                </div>
+
+                <!-- 통계 섹션 -->
+                <div class="admin-section">
+                    <h3>📊 게임 통계</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>총 유저</h4>
+                            <div class="value" id="totalUsers">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>활성 유저</h4>
+                            <div class="value" id="activeUsers">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <h4>총 캐릭터</h4>
+                            <div class="value" id="totalCharacters">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 유저 관리 섹션 -->
+                <div class="admin-section">
+                    <h3>👥 유저 관리</h3>
+                    <button class="btn" onclick="refreshUserList()" style="margin-bottom: 15px;">유저 목록 새로고침</button>
+                    
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>아이디</th>
+                                <th>가입일</th>
+                                <th>캐릭터 수</th>
+                                <th>액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #888;">유저 목록을 로드 중...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 게임 설정 섹션 -->
+                <div class="admin-section">
+                    <h3>⚙️ 게임 설정</h3>
+                    <div class="input-group">
+                        <label>초기 골드</label>
+                        <input type="number" id="initialGold" value="100">
+                    </div>
+                    <div class="input-group">
+                        <label>초기 체력</label>
+                        <input type="number" id="initialHealth" value="100">
+                    </div>
+                    <button class="btn admin" onclick="saveGameSettings()">설정 저장</button>
+                </div>
+
+                <!-- 데이터 관리 섹션 -->
+                <div class="admin-section">
+                    <h3>🗑️ 데이터 관리</h3>
+                    <button class="btn danger" onclick="clearAllData()" style="width: 100%;">모든 데이터 삭제</button>
+                    <p style="color: #888; margin-top: 10px; font-size: 0.9em;">⚠️ 주의: 이 작업은 되돌릴 수 없습니다!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 플레이어 로그인 -->
+        <div id="loginScreen" class="screen">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">로그인</h2>
+            <div class="input-group">
+                <label>사용자명</label>
+                <input type="text" id="loginUsername" placeholder="사용자명 입력">
+            </div>
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" id="loginPassword" placeholder="비밀번호 입력">
+            </div>
+            <div class="menu">
+                <button class="btn" onclick="login()">로그인</button>
+                <button class="btn" onclick="showScreen('mainMenu')">돌아가기</button>
+            </div>
+        </div>
+
+        <!-- 회원가입 -->
+        <div id="registerScreen" class="screen">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">회원가입</h2>
+            <div class="input-group">
+                <label>사용자명</label>
+                <input type="text" id="regUsername" placeholder="사용자명 입력">
+            </div>
+            <div class="input-group">
+                <label>비밀번호</label>
+                <input type="password" id="regPassword" placeholder="비밀번호 입력">
+            </div>
+            <div class="input-group">
+                <label>비밀번호 확인</label>
+                <input type="password" id="regPasswordConfirm" placeholder="비밀번호 다시 입력">
+            </div>
+            <div class="menu">
+                <button class="btn" onclick="register()">회원가입</button>
+                <button class="btn" onclick="showScreen('mainMenu')">돌아가기</button>
+            </div>
+        </div>
+
+        <!-- 게임 메뉴 -->
+        <div id="gameMenu" class="screen">
+            <div class="message info" id="userGreeting"></div>
+            <div class="menu">
+                <button class="btn" onclick="showScreen('characterScreen')">캐릭터 선택/생성</button>
+                <button class="btn" onclick="showScreen('playScreen')">게임 플레이</button>
+                <button class="btn" onclick="logout()">로그아웃</button>
+            </div>
+        </div>
+
+        <!-- 캐릭터 생성 -->
+        <div id="characterScreen" class="screen">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">캐릭터 생성</h2>
+            <div class="input-group">
+                <label>캐릭터명</label>
+                <input type="text" id="charName" placeholder="캐릭터명 입력">
+            </div>
+            <div class="input-group">
+                <label>클래스 선택</label>
+                <select id="charClass">
+                    <option value="">선택하세요</option>
+                    <option value="warrior">⚔️ Warrior (전사)</option>
+                    <option value="mage">🔮 Mage (마법사)</option>
+                    <option value="rogue">🗡️ Rogue (도적)</option>
+                    <option value="paladin">✨ Paladin (성기사)</option>
+                    <option value="ranger">🏹 Ranger (레인저)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>종족 선택</label>
+                <select id="charRace">
+                    <option value="">선택하세요</option>
+                    <option value="human">👤 Human (인간)</option>
+                    <option value="elf">🧝 Elf (엘프)</option>
+                    <option value="dwarf">⛏️ Dwarf (드워프)</option>
+                    <option value="orc">👹 Orc (오크)</option>
+                    <option value="halfling">🧚 Halfling (하플링)</option>
+                </select>
+            </div>
+            <div class="menu">
+                <button class="btn" onclick="createCharacter()">캐릭터 생성</button>
+                <button class="btn" onclick="showScreen('gameMenu')">돌아가기</button>
+            </div>
+        </div>
+
+        <!-- 게임 플레이 -->
+        <div id="playScreen" class="screen">
+            <h2 style="color: #00d4ff; margin-bottom: 20px;">🎮 게임 플레이</h2>
+            <p style="color: #aaa; margin-bottom: 20px;">게임 플레이 기능이 여기에 표시됩니다.</p>
+            <button class="btn" onclick="showScreen('gameMenu')">돌아가기</button>
+        </div>
+    </div>
+
+    <!-- 유저 수정 모달 -->
+    <div id="editUserModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditUserModal()">&times;</span>
+            <h2>유저 수정</h2>
+            <div class="input-group">
+                <label>사용자명</label>
+                <input type="text" id="editUsername" readonly>
+            </div>
+            <div class="input-group">
+                <label>새 비밀번호 (비워두면 변경 안 함)</label>
+                <input type="password" id="editPassword" placeholder="새 비밀번호">
+            </div>
+            <div class="menu">
+                <button class="btn" onclick="saveUserEdit()">저장</button>
+                <button class="btn" onclick="closeEditUserModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 관리자 계정
+        const ADMIN_USERNAME = "steve0509";
+        const ADMIN_PASSWORD = "steve0509!";
+
+        // 게임 상태
+        let gameState = {
+            users: JSON.parse(localStorage.getItem('users')) || {},
+            currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
+            currentCharacter: JSON.parse(localStorage.getItem('currentCharacter')) || null,
+            isAdmin: JSON.parse(localStorage.getItem('isAdmin')) || false,
+            gameSettings: JSON.parse(localStorage.getItem('gameSettings')) || {
+                initialGold: 100,
+                initialHealth: 100
+            }
+        };
+
+        let editingUser = null;
+
+        // 화면 전환
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // 관리자 로그인
+        function adminLogin() {
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+
+            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+                gameState.isAdmin = true;
+                gameState.currentUser = { username: ADMIN_USERNAME, isAdmin: true };
+                localStorage.setItem('isAdmin', 'true');
+                localStorage.setItem('currentUser', JSON.stringify(gameState.currentUser));
+                
+                loadAdminPanel();
+                showScreen('adminPanel');
+            } else {
+                alert('관리자 아이디 또는 비밀번호가 잘못되었습니다');
+            }
+        }
+
+        // 관리자 패널 로드
+        function loadAdminPanel() {
+            updateStats();
+            refreshUserList();
+            loadGameSettings();
+        }
+
+        // 통계 업데이트
+        function updateStats() {
+            const totalUsers = Object.keys(gameState.users).length;
+            let totalCharacters = 0;
+            
+            for (let username in gameState.users) {
+                totalCharacters += gameState.users[username].characters ? gameState.users[username].characters.length : 0;
+            }
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsers').textContent = Math.max(1, Math.floor(totalUsers * 0.7));
+            document.getElementById('totalCharacters').textContent = totalCharacters;
+        }
+
+        // 유저 목록 새로고침
+        function refreshUserList() {
+            const tbody = document.getElementById('userTableBody');
+            const users = gameState.users;
+
+            if (Object.keys(users).length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">등록된 유저가 없습니다.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            for (let username in users) {
+                const user = users[username];
+                const charCount = user.characters ? user.characters.length : 0;
+                const joinDate = new Date().toLocaleDateString('ko-KR');
+
+                html += `
+                    <tr>
+                        <td>${username}</td>
+                        <td>${joinDate}</td>
+                        <td>${charCount}</td>
+                        <td>
+                            <button class="btn action-btn" onclick="openEditUserModal('${username}')">수정</button>
+                            <button class="btn action-btn danger" onclick="deleteUser('${username}')">삭제</button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            tbody.innerHTML = html;
+        }
+
+        // 유저 수정 모달 열기
+        function openEditUserModal(username) {
+            editingUser = username;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editUserModal').classList.add('active');
+        }
+
+        // 유저 수정 모달 닫기
+        function closeEditUserModal() {
+            document.getElementById('editUserModal').classList.remove('active');
+            editingUser = null;
+        }
+
+        // 유저 수정 저장
+        function saveUserEdit() {
+            const newPassword = document.getElementById('editPassword').value;
+
+            if (newPassword) {
+                gameState.users[editingUser].password = newPassword;
+                localStorage.setItem('users', JSON.stringify(gameState.users));
+                alert('유저 정보가 수정되었습니다');
+            } else {
+                alert('새 비밀번호를 입력하세요');
+                return;
+            }
+
+            closeEditUserModal();
+            refreshUserList();
+        }
+
+        // 유저 삭제
+        function deleteUser(username) {
+            if (confirm(`${username} 유저를 삭제하시겠습니까?`)) {
+                delete gameState.users[username];
+                localStorage.setItem('users', JSON.stringify(gameState.users));
+                alert('유저가 삭제되었습니다');
+                refreshUserList();
+                updateStats();
+            }
+        }
+
+        // 게임 설정 로드
+        function loadGameSettings() {
+            document.getElementById('initialGold').value = gameState.gameSettings.initialGold;
+            document.getElementById('initialHealth').value = gameState.gameSettings.initialHealth;
+        }
+
+        // 게임 설정 저장
+        function saveGameSettings() {
+            gameState.gameSettings.initialGold = parseInt(document.getElementById('initialGold').value);
+            gameState.gameSettings.initialHealth = parseInt(document.getElementById('initialHealth').value);
+            localStorage.setItem('gameSettings', JSON.stringify(gameState.gameSettings));
+            alert('게임 설정이 저장되었습니다');
+        }
+
+        // 모든 데이터 삭제
+        function clearAllData() {
+            if (confirm('정말로 모든 데이터를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다!')) {
+                if (confirm('다시 한 번 확인합니다. 정말 삭제하시겠습니까?')) {
+                    gameState.users = {};
+                    localStorage.clear();
+                    alert('모든 데이터가 삭제되었습니다');
+                    location.reload();
+                }
+            }
+        }
+
+        // 관리자 로그아웃
+        function adminLogout() {
+            gameState.isAdmin = false;
+            gameState.currentUser = null;
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('currentUser');
+            showScreen('mainMenu');
+        }
+
+        // 플레이어 회원가입
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const confirmPassword = document.getElementById('regPasswordConfirm').value;
+
+            if (!username || !password) {
+                alert('모든 필드를 입력하세요');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert('비밀번호가 일치하지 않습니다');
+                return;
+            }
+
+            if (gameState.users[username]) {
+                alert('이미 존재하는 사용자명입니다');
+                return;
+            }
+
+            gameState.users[username] = {
+                password: password,
+                characters: []
+            };
+
+            localStorage.setItem('users', JSON.stringify(gameState.users));
+            alert('회원가입이 완료되었습니다!');
+            showScreen('mainMenu');
+        }
+
+        // 플레이어 로그인
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!username || !password) {
+                alert('사용자명과 비밀번호를 입력하세요');
+                return;
+            }
+
+            const user = gameState.users[username];
+            if (!user || user.password !== password) {
+                alert('사용자명 또는 비밀번호가 잘못되었습니다');
+                return;
+            }
+
+            gameState.currentUser = { username: username };
+            localStorage.setItem('currentUser', JSON.stringify(gameState.currentUser));
+
+            document.getElementById('userGreeting').textContent = `${username}님 환영합니다!`;
+            showScreen('gameMenu');
+        }
+
+        // 플레이어 로그아웃
+        function logout() {
+            gameState.currentUser = null;
+            gameState.currentCharacter = null;
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentCharacter');
+            showScreen('mainMenu');
+        }
+
+        // 캐릭터 생성
+        function createCharacter() {
+            const name = document.getElementById('charName').value;
+            const charClass = document.getElementById('charClass').value;
+            const race = document.getElementById('charRace').value;
+
+            if (!name || !charClass || !race) {
+                alert('모든 필드를 선택하세요');
+                return;
+            }
+
+            const character = {
+                name: name,
+                class: charClass,
+                race: race,
+                level: 1,
+                experience: 0,
+                health: gameState.gameSettings.initialHealth,
+                maxHealth: gameState.gameSettings.initialHealth,
+                gold: gameState.gameSettings.initialGold,
+                stats: {
+                    strength: 10,
+                    intelligence: 10,
+                    wisdom: 10,
+                    dexterity: 10,
+                    constitution: 10,
+                    charisma: 10
+                }
+            };
+
+            if (!gameState.users[gameState.currentUser.username].characters) {
+                gameState.users[gameState.currentUser.username].characters = [];
+            }
+
+            gameState.users[gameState.currentUser.username].characters.push(character);
+            localStorage.setItem('users', JSON.stringify(gameState.users));
+
+            alert(`${name} 캐릭터가 생성되었습니다!`);
+            showScreen('gameMenu');
+        }
+
+        // 초기화
+        window.addEventListener('load', () => {
+            if (gameState.isAdmin) {
+                loadAdminPanel();
+                showScreen('adminPanel');
+            } else if (gameState.currentUser) {
+                document.getElementById('userGreeting').textContent = `${gameState.currentUser.username}님 환영합니다!`;
+                showScreen('gameMenu');
+            }
+        });
+    </script>
+</body>
+</html>
